@@ -15,9 +15,10 @@ class HomeViewController: UIViewController {
   // MARK: - Injections
   private var images = [UIImage]()
   private var loadingAnimation: LOTAnimationView?
-  private var networkingSharedInstance = Networking()
   private var hasData: Bool?
   private let refreshControl = UIRefreshControl()
+  private var networkingSharedInstance = Networking()
+  let reachability = Reachability()!
   
   // MARK: - Outlets
   @IBOutlet weak var photoCollectionView: UICollectionView!
@@ -52,20 +53,15 @@ class HomeViewController: UIViewController {
   }
   
   func loadPhotos() {
-    let reachability = Reachability()!
-    
     reachability.whenReachable = { reachability in
       self.showLoadingIndicator()
-      self.networkingSharedInstance.getPhotosInformation()
+      self.networkingSharedInstance.getPhotosInformation(completion: {_ in })
       self.noNetworkConnectionLabel.isHidden = true
       self.tryAgainButton.isHidden = true
     }
-    //uuygghhh
     reachability.whenUnreachable = { _ in
-      if self.photoCollectionView != nil {
       self.noNetworkConnectionLabel.isHidden = false
       self.tryAgainButton.isHidden = false
-      }
       self.removeLoadingIndicator()
       self.refreshControl.endRefreshing()
     }
@@ -108,11 +104,11 @@ extension HomeViewController: UICollectionViewDelegate, UICollectionViewDataSour
     } else {
       photoCollectionView.addSubview(refreshControl)
     }
-    refreshControl.addTarget(self, action: #selector(refreshWeatherData(_:)), for: .valueChanged)
+    refreshControl.addTarget(self, action: #selector(refreshPhotos(_:)), for: .valueChanged)
   }
   
-  @objc private func refreshWeatherData(_ sender: Any) {
-    loadPhotos()
+  @objc private func refreshPhotos(_ sender: Any) {
+    networkingSharedInstance.getPhotosInformation(completion: {_ in })
   }
 }
 

@@ -1,26 +1,49 @@
-//
-//  Networking.swift
-//  JStrawn_Photos
-//
-//  Created by Jay Strawn on 6/26/18.
-//  Copyright © 2018 Jay Strawn. All rights reserved.
-//
+////
+////  Networking.swift
+////  JStrawn_Photos
+////
+////  Created by Jay Strawn on 6/26/18.
+////  Copyright © 2018 Jay Strawn. All rights reserved.
+////
 
 import UIKit
 
-public class Networking {
+enum WebServiceError: Error {
+  case DataEmptyError
+  case ResponseError
+}
+
+protocol SessionProtocol {
+  func dataTask(with url: URL, completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void ) -> URLSessionDataTask
+}
+
+class Networking {
+  
+  lazy var session: SessionProtocol = URLSession.shared
   
   static let sharedInstance = Networking()
   
   var delegate: ReloadCollectionViewDelegate?
+  var jsonString: String?
   var photos = [Photo]()
   
-  func getPhotosInformation() {
-    let jsonString = "http://jsonplaceholder.typicode.com/photos"
+  func getPhotosInformation(completion: @escaping (Error?) -> Void) {
     
-    guard let url = URL(string: jsonString) else { return }
-    URLSession.shared.dataTask(with: url) { (data, response, error) in
-      guard let data = data else { return }
+    jsonString = "http://jsonplaceholder.typicode.com/photos"
+    
+    
+    guard let url = URL(string: jsonString!) else { fatalError() }
+    session.dataTask(with: url) { (data, response, error) in
+      
+      guard error == nil else {
+        completion(WebServiceError.ResponseError)
+        return
+      }
+      guard let data = data else {
+        completion(WebServiceError.DataEmptyError)
+        return
+      }
+      
       do {
         let decoder = JSONDecoder()
         let photoData = try decoder.decode([PhotoRawInfo].self, from: data)
@@ -42,4 +65,8 @@ public class Networking {
       self.delegate?.didGetResult(success)
       }.resume()
   }
+  
+}
+
+extension URLSession: SessionProtocol {
 }
