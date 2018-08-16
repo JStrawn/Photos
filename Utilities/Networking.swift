@@ -46,18 +46,7 @@ class Networking {
       
       do {
         let decoder = JSONDecoder()
-        let photoData = try decoder.decode([PhotoRawInfo].self, from: data)
-        self.photos.removeAll()
-        for photo in photoData {
-          let albumId = photo.albumId
-          let id = photo.id
-          let title = photo.title
-          let url = photo.url
-          let thumbnailUrl = photo.thumbnailUrl
-          
-          let photoObject = Photo(albumId: albumId, id: id, title: title, url: url, thumbnailUrl: thumbnailUrl)
-          self.photos.append(photoObject)
-        }
+        self.photos = try decoder.decode([Photo].self, from: data)
       } catch let error {
         print("Error", error)
       }
@@ -65,7 +54,6 @@ class Networking {
       self.delegate?.didGetResult(success)
       }.resume()
   }
-  
 }
 
 extension URLSession: SessionProtocol {

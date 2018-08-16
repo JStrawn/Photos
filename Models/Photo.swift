@@ -8,13 +8,12 @@
 
 import UIKit
 
-public class Photo {
+public class Photo: Codable {
   var albumId: Int
   var id: Int
   var title: String
   var url: String
   var thumbnailUrl: String
-  var image: UIImage?
   
   init(albumId: Int, id: Int, title: String, url: String, thumbnailUrl: String) {
     self.albumId = albumId
